@@ -8,7 +8,7 @@ import ScrollReveal from './ui/ScrollReveal';
 
 export default function AboutSection() {
 
-  const bioText = "Saya Satria, seorang Fullstack Developer yang menggabungkan logika teknis dengan estetika desain. Fokus utama saya adalah menciptakan pengalaman web yang tidak hanya cepat dan fungsional, tetapi juga memberikan kesan mendalam bagi penggunanya.";
+  const bioText = "Saya Satria Dewangga, seorang Front-end Developer yang menggabungkan logika teknis dengan estetika desain. Fokus utama saya adalah menciptakan pengalaman web yang tidak hanya cepat dan fungsional, tetapi juga memberikan kesan mendalam bagi penggunanya.";
 
   return (
     <section className="relative py-32 px-6 bg-black text-white overflow-hidden border-t border-white/10">
