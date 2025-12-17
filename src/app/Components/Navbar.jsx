@@ -1,114 +1,153 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { SiGithub, SiLinkedin, SiInstagram } from 'react-icons/si';
-import { X, Menu } from 'lucide-react';
-import Link from 'next/link'; // PENTING: Pakai Link dari Next.js
-import { usePathname } from 'next/navigation'; // Untuk cek halaman aktif
+import { Home, FolderGit2, User, Mail, Sun, Moon } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
 
-// --- UPDATE LINK DI SINI ---
 const navItems = [
-    { name: 'BERANDA', href: '/' },
-    { name: 'PROJECT', href: '/#projects' }, // Tetap scroll di home atau buat page terpisah nanti
-    { name: 'TENTANG', href: '/about' },     // Mengarah ke file src/app/about/page.jsx
-    { name: 'KONTAK', href: '/contact' },    // Mengarah ke file src/app/contact/page.jsx
+    { name: 'Home', href: '/', icon: <Home size={18} /> }, // Ukuran icon dikecilkan sedikit (18px) biar proporsional di HP
+    { name: 'Projects', href: '/#projects', icon: <FolderGit2 size={18} /> },
+    { name: 'About', href: '/about', icon: <User size={18} /> },
+    { name: 'Contact', href: '/contact', icon: <Mail size={18} /> },
 ];
 
 export default function Navbar() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [isScrolled, setIsScrolled] = useState(false);
-    const pathname = usePathname(); // Cek URL saat ini
+    const pathname = usePathname();
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        setMounted(true);
     }, []);
 
-    // Helper untuk cek link aktif
-    const isActive = (href) => pathname === href;
+    if (!mounted) return null;
 
     return (
         <>
-            {/* NAVIGASI DESKTOP */}
-            <AnimatePresence>
-                {!isScrolled && !isOpen && (
-                    <motion.header
-                        initial={{ y: -100, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -100, opacity: 0 }}
-                        className="fixed top-0 left-0 w-full z-50 py-8 px-6 mix-blend-difference text-white"
-                    >
-                        <div className="max-w-7xl mx-auto flex items-center justify-center">
-                            <nav className="flex gap-6 md:gap-8">
-                                {navItems.map((item) => (
-                                    <Link
-                                        key={item.name}
-                                        href={item.href}
-                                        className={`relative group text-base md:text-lg font-normal uppercase transition-colors ${isActive(item.href) ? 'text-white' : 'text-neutral-400 hover:text-white'}`}
+            {/* --- 1. SPOTLIGHT BACKGROUND EFFECT --- */}
+            <div className="fixed inset-0 z-[-1] pointer-events-none flex justify-center items-center">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+            </div>
+
+            {/* --- 2. FLOATING DOCK NAVIGATION --- */}
+            {/*
+                Perubahan Responsif:
+                - bottom-4: Jarak dari bawah lebih sedikit di HP.
+                - w-fit: Lebar menyesuaikan isi, bukan full width.
+                - max-w-[90%]: Mencegah dock menabrak pinggir layar di HP sangat kecil.
+            */}
+            <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-fit max-w-[95%] sm:max-w-md">
+                <motion.div
+                    initial={{ y: 100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                    className="flex items-center gap-1 sm:gap-2 px-2 py-2 sm:px-3 sm:py-3 rounded-full border border-white/20 shadow-2xl backdrop-blur-xl
+                    bg-white/90 dark:bg-black/80 supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-black/60"
+                >
+                    {/* MENU ITEMS LOOP */}
+                    {navItems.map((item) => {
+                        const isActive = item.href === '/'
+                            ? pathname === '/'
+                            : pathname.startsWith(item.href);
+
+                        return (
+                            <Link key={item.name} href={item.href} className="relative z-10">
+                                <div className="relative px-3 py-2 sm:px-4 sm:py-3 rounded-full cursor-pointer group">
+
+                                    {/* ACTIVE PILL */}
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="active-pill"
+                                            className="absolute inset-0 bg-neutral-900 dark:bg-white rounded-full"
+                                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                        />
+                                    )}
+
+                                    {/* ICON */}
+                                    <motion.div
+                                        whileHover={{ scale: 1.2 }}
+                                        whileTap={{ scale: 0.9 }}
+                                        className={`relative z-10 flex items-center justify-center transition-colors duration-200
+                                        ${isActive
+                                            ? 'text-white dark:text-black'
+                                            : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+                                        }`}
                                     >
+                                        {/* Clone elemen icon untuk mengubah ukuran dinamis jika perlu, atau pakai default */}
+                                        {React.cloneElement(item.icon, {
+                                            size: 18, // Paksa ukuran icon konsisten di mobile
+                                            className: "sm:w-[20px] sm:h-[20px]" // Di desktop (sm) jadi 20px
+                                        })}
+                                    </motion.div>
+
+                                    {/* TOOLTIP (Desktop Only - Hidden on Mobile) */}
+                                    <span className="hidden sm:block absolute -top-12 left-1/2 -translate-x-1/2 px-2 py-1 bg-neutral-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                                         {item.name}
-                                        {isActive(item.href) ? (
-                                            <motion.div layoutId="underline" className="absolute left-0 -bottom-1 w-full h-[1px] bg-white" />
-                                        ) : (
-                                            <span className="absolute left-0 -bottom-1 w-0 h-[1px] bg-gray-400 transition-all duration-300 group-hover:w-full"></span>
-                                        )}
-                                    </Link>
-                                ))}
-                            </nav>
-                        </div>
-                    </motion.header>
-                )}
-            </AnimatePresence>
+                                        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-neutral-900 rotate-45"></span>
+                                    </span>
+                                </div>
+                            </Link>
+                        );
+                    })}
 
-            {/* TOMBOL HAMBURGER */}
-            <AnimatePresence>
-                {(isScrolled || isOpen) && (
+                    {/* SEPARATOR */}
+                    <div className="w-[1px] h-5 sm:h-6 bg-neutral-300 dark:bg-neutral-700 mx-1"></div>
+
+                    {/* THEME TOGGLE */}
                     <motion.button
-                        initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-                        onClick={() => setIsOpen(!isOpen)}
-                        className={`fixed top-6 right-6 z-[60] w-14 h-14 rounded-full flex items-center justify-center shadow-lg backdrop-blur-md transition-colors duration-300 ${isOpen ? 'bg-white text-black' : 'bg-neutral-900/80 text-white border border-white/10'}`}
+                        whileHover={{ rotate: 180 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                        className="p-2 sm:p-3 rounded-full text-neutral-500 hover:text-black dark:hover:text-white transition-colors"
+                        aria-label="Toggle Theme"
                     >
-                        {isOpen ? <X size={24} /> : <Menu size={24} />}
+                        {theme === 'dark' ? <Sun size={18} className="sm:w-[20px] sm:h-[20px]" /> : <Moon size={18} className="sm:w-[20px] sm:h-[20px]" />}
                     </motion.button>
-                )}
-            </AnimatePresence>
+                </motion.div>
+            </div>
 
-            {/* FULLSCREEN MENU */}
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ clipPath: "circle(0% at 100% 0%)" }}
-                        animate={{ clipPath: "circle(150% at 100% 0%)" }}
-                        exit={{ clipPath: "circle(0% at 100% 0%)" }}
-                        transition={{ duration: 0.7, ease: [0.32, 0, 0.67, 0] }}
-                        className="fixed inset-0 z-50 bg-black text-white flex flex-col justify-center items-center"
-                    >
-                        <nav className="flex flex-col gap-8 text-center">
-                            {navItems.map((item, i) => (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    onClick={() => setIsOpen(false)}
-                                    className="block text-5xl md:text-7xl font-bold tracking-tighter hover:text-neutral-500 transition-colors"
-                                >
-                                    {item.name}
-                                </Link>
-                            ))}
-                        </nav>
+            {/* --- 3. SOCIALS (Desktop Only) --- */}
+            {/* Tetap hidden di mobile agar tidak menumpuk layar */}
+            <motion.div
+                initial={{ x: 100, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                className="fixed top-6 right-6 z-40 hidden md:flex flex-col gap-4"
+            >
+                <SocialLink href="https://github.com/sunk1ssededd" icon={<SiGithub />} />
+                {/* <SocialLink href="https://linkedin.com" icon={<SiLinkedin />} /> */}
+                <SocialLink href="https://instagram.com" icon={<SiInstagram />} />
+            </motion.div>
 
-                        {/* Social Icons di Menu */}
-                        <div className="absolute bottom-12 flex gap-8">
-                            <SiGithub size={24} className="hover:text-indigo-500 cursor-pointer"/>
-                            <SiLinkedin size={24} className="hover:text-indigo-500 cursor-pointer"/>
-                            <SiInstagram size={24} className="hover:text-indigo-500 cursor-pointer"/>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {/* --- 4. BRAND / LOGO --- */}
+             <motion.div
+                initial={{ x: -100, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                // Ubah di sini:
+                // 1. Hapus 'mix-blend-difference' agar warnanya solid putih jelas
+                // 2. Tambahkan 'bg-transparent' untuk memastikan tidak ada kotak background
+                // 3. Pastikan 'z-50' agar dia di atas segalanya tapi backgroundnya bolong
+                className="fixed top-5 left-5 md:top-6 md:left-6 z-50 font-bold text-lg md:text-xl tracking-tighter text-white bg-transparent pointer-events-none"
+            >
+                Satria Dewangga.
+            </motion.div>
         </>
     );
+}
+
+// Komponen Kecil untuk Social Link
+function SocialLink({ href, icon }) {
+    return (
+        <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-3 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-neutral-500 hover:text-white hover:bg-white/20 transition-all hover:scale-110"
+        >
+            {icon}
+        </a>
+    )
 }

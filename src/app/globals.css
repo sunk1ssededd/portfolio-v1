@@ -152,3 +152,36 @@ body {
   mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
   -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
 }
+
+/* ... css lainnya ... */
+
+/* Efek Spotlight Global */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1; /* Di belakang konten */
+  pointer-events: none; /* Klik tembus ke bawah */
+
+  /* Gradien cahaya mengikuti koordinat mouse */
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(29, 78, 216, 0.15), /* Warna Biru samar (bisa diganti) */
+    transparent 40%
+  );
+
+  /* Transisi halus */
+  transition: background 0.15s ease;
+}
+
+/* Khusus Dark Mode: Cahaya lebih terang sedikit */
+.dark body::before {
+    background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.08),
+    transparent 40%
+  );
+}
